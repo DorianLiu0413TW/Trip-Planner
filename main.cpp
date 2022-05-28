@@ -4,9 +4,10 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 using namespace std;
 
-int miniDist(int distance[], bool visited[], int totalPlaces) // finding minimum distance
+int miniDist(float distance[], bool visited[], int totalPlaces) // finding minimum distance
 {
     int minimum = INT_MAX, index;
 
@@ -23,10 +24,10 @@ int miniDist(int distance[], bool visited[], int totalPlaces) // finding minimum
 
 vector<int> Dijkstra(vector<vector<float>> graph, int origin, int destination, int totalPlaces) // adjacency matrix
 {
-    int distance[totalPlaces]; // array to calculate the minimum distance for each node
+    float distance[totalPlaces]; // array to calculate the minimum distance for each node
     bool visited[totalPlaces]; // boolean array to mark visited and unvisited for each node
     vector<int> path;
-    // initialize distance to infinite
+    // initialize distance to INT_MAX
     for (int k = 0; k < totalPlaces; k++)
     {
         distance[k] = INT_MAX;
@@ -65,10 +66,10 @@ vector<int> Dijkstra(vector<vector<float>> graph, int origin, int destination, i
 
 vector<int> maxProductDijkstra(vector<vector<float>> graph, int origin, int destination, int totalPlaces) // adjacency matrix
 {
-    int distance[totalPlaces]; // array to calculate the minimum distance for each node
+    float distance[totalPlaces]; // array to calculate the minimum distance for each node
     bool visited[totalPlaces]; // boolean array to mark visited and unvisited for each node
     vector<int> path;
-    // initialize distance to infinite
+    // initialize distance to INT_MAX
     for (int k = 0; k < totalPlaces; k++)
     {
         distance[k] = INT_MAX;
@@ -90,9 +91,9 @@ vector<int> maxProductDijkstra(vector<vector<float>> graph, int origin, int dest
         for (int k = 0; k < totalPlaces; k++)
         {
             // updating the distance of neighbor vertex
-            if (!visited[k] && graph[m][k] && distance[m] != INT_MAX && distance[m] + graph[m][k] < distance[k])
+            if (!visited[k] && graph[m][k] && distance[m] != INT_MAX && abs(log(distance[m])) + abs(log(graph[m][k])) < abs(log(distance[k])))
             {
-                distance[k] = distance[m] + graph[m][k];
+                distance[k] = abs(log(distance[m])) + abs(log(graph[m][k]));
                 cout << "distance: " << distance[k] << endl;
             }
         }
@@ -141,7 +142,9 @@ int main()
     vector<string> instructions;
     vector<int> path; // the traverse path of graph
     map<string, int> stringToNumber;
+    map<string, int> changingStringToNumber;
     map<int, string> numberToString;
+    map<int, string> changingNumberToString;
     map<string, int>::iterator stringToNumberIter;
     map<string, bool> state;
     map<string, bool>::iterator stateIter;
@@ -169,7 +172,9 @@ int main()
                 temp.push_back(word);
             }
             stringToNumber.insert(pair<string, int>(temp[1], count - 2));
+            changingStringToNumber.insert(pair<string, int>(temp[1], count - 2));
             numberToString.insert(pair<int, string>(count - 2, temp[1]));
+            changingNumberToString.insert(pair<int, string>(count - 2, temp[1]));
             state.insert(pair<string, bool>(temp[1], 1)); // initialize place state to true
 
             infos.push_back(temp);
@@ -240,54 +245,22 @@ int main()
                 {
                     if (inst[1] == "CLOSE")
                     {
-                        cout << "valid close instruction" << endl;
+                        // cout << "valid close instruction" << endl;
                         state[inst[i]] = false;
-                        cout << "state: "<< inst[i] << " " << state[inst[i]] <<endl;
+                        // cout << "state: "<< inst[i] << " " << state[inst[i]] <<endl;
                         for (int j = 0; j < totalPlaces; j++)
                         {
                             cout << inst[i] << j << endl;
-                            // changingTimeGraph.erase(stringToNumber[inst[i]], j);
-                            // changingTimeGraph[stringToNumber[inst[i]]][j] = 100;
-                            // changingTimeGraph[j][stringToNumber[inst[i]]] = 100;
-                            // changingTendencyGraph[j][stringToNumber[inst[i]]] = 100;
-                            // changingTendencyGraph[stringToNumber[inst[i]]][j] = 100;
+                            changingTimeGraph[j].erase(changingTimeGraph[j].begin()+stringToNumber[inst[i]]); // erase cloumn
+                            changingTendencyGraph[j].erase(changingTendencyGraph[j].begin()+stringToNumber[inst[i]]); // erase cloumn
                         }
-                        changingTimeGraph[stringToNumber[inst[i]]][stringToNumber[inst[i]]] = 0;
-                        changingTendencyGraph[stringToNumber[inst[i]]][stringToNumber[inst[i]]] = 0;
-                        for (int a = 0; a < totalPlaces; a++)
-                        {
-                            for (int b = 0; b < totalPlaces; b++)
-                            {
-                                cout << changingTimeGraph[a][b] << " \t ";
-                            }
-                            cout << endl;
-                        }
-                        // for (int a = 0; a < totalPlaces; a++)
-                        // {
-                        //     for (int b = 0; b < totalPlaces; b++)
-                        //     {
-                        //         cout << changingTendencyGraph[a][b] << " \t ";
-                        //     }
-                        //     cout << endl;
-                        // }
-                    }
-                    else if (inst[1] == "OPEN")
-                    {
-                        cout << "valid open instruction" << endl;
-                        state[inst[i]] = true;
+                        changingTimeGraph.erase(changingTimeGraph.begin() + stringToNumber[inst[i]]);
+                        changingTendencyGraph.erase(changingTendencyGraph.begin()+stringToNumber[inst[i]]); // erase cloumn
                         
-                        for (int j = 0; j < totalPlaces; j++)
-                        {
-                            cout << i << " " << state[inst[i]] << endl;
-                            cout << state[inst[j]] << endl;
-                            if (!state[inst[j]])
-                            {
-                                changingTimeGraph[stringToNumber[inst[i]]][j] = timeGraph[stringToNumber[inst[i]]][j];
-                                changingTimeGraph[j][stringToNumber[inst[i]]] = timeGraph[j][stringToNumber[inst[i]]];
-                                changingTendencyGraph[j][stringToNumber[inst[i]]] = tendencyGraph[j][stringToNumber[inst[i]]];
-                                changingTendencyGraph[stringToNumber[inst[i]]][j] = tendencyGraph[stringToNumber[inst[i]]][j];
-                            }
-                        }
+                        changingNumberToString.erase(stringToNumber[inst[i]]);
+                        changingStringToNumber.erase(inst[i]);
+                        
+                        totalPlaces = totalPlaces - 1;
                         for (int a = 0; a < totalPlaces; a++)
                         {
                             for (int b = 0; b < totalPlaces; b++)
@@ -304,6 +277,39 @@ int main()
                             }
                             cout << endl;
                         }
+                        
+                    }
+                    else if (inst[1] == "OPEN")
+                    {
+                        cout << "valid open instruction" << endl;
+                        state[inst[i]] = true;
+                        
+                        for (int j = 0; j < totalPlaces; j++)
+                        {
+                            if (!state[inst[j]])
+                            {
+                                changingTimeGraph[stringToNumber[inst[i]]][j] = timeGraph[stringToNumber[inst[i]]][j];
+                                changingTimeGraph[j][stringToNumber[inst[i]]] = timeGraph[j][stringToNumber[inst[i]]];
+                                changingTendencyGraph[j][stringToNumber[inst[i]]] = tendencyGraph[j][stringToNumber[inst[i]]];
+                                changingTendencyGraph[stringToNumber[inst[i]]][j] = tendencyGraph[stringToNumber[inst[i]]][j];
+                            }
+                        }
+                        // for (int a = 0; a < totalPlaces; a++)
+                        // {
+                        //     for (int b = 0; b < totalPlaces; b++)
+                        //     {
+                        //         cout << changingTimeGraph[a][b] << " \t ";
+                        //     }
+                        //     cout << endl;
+                        // }
+                        // for (int a = 0; a < totalPlaces; a++)
+                        // {
+                        //     for (int b = 0; b < totalPlaces; b++)
+                        //     {
+                        //         cout << changingTendencyGraph[a][b] << " \t ";
+                        //     }
+                        //     cout << endl;
+                        // }
                     }
                 }
             }
@@ -312,7 +318,8 @@ int main()
         {
             if (inst[2] == "TIME")
             {
-                // cout << "origin: " << stringToNumber[origin] << endl; // check origin
+                cout << "origin: " << stringToNumber[origin] << endl;
+                cout << "destination: " << stringToNumber[inst[1]] << endl;
                 path = Dijkstra(changingTimeGraph, stringToNumber[origin], stringToNumber[inst[1]], totalPlaces);
                 cout << "Optimal TIME : ";
                 for (int j = 0; j < path.size(); j++)
@@ -329,6 +336,22 @@ int main()
             }
             else if (inst[2] == "FLOW")
             {
+                // cout << "origin: " << stringToNumber[origin] << endl; // check origin
+                cout << "origin: " << changingStringToNumber[origin] << endl;
+                cout << "destination: " <<  changingStringToNumber[inst[1]] << endl;
+                path = maxProductDijkstra(changingTendencyGraph, changingStringToNumber[origin], changingStringToNumber[inst[1]], totalPlaces);
+                cout << "Optimal FLOW : ";
+                for (int j = 0; j < path.size(); j++)
+                {
+                    if (j == path.size() - 1)
+                    {
+                        cout << numberToString[path[j]] << endl;
+                    }
+                    else
+                    {
+                        cout << numberToString[path[j]] << " -> ";
+                    }
+                }
             }
         }
         else if (inst[0] == "LIMITED_PATH")
