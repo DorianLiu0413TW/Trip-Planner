@@ -1,0 +1,24 @@
+5
+0 Huashan_Park 5
+1 Taipei_one_o_one 3
+2 Palace_Museum 2
+3 East_District 4
+4 Shilin_Night_Market 1 
+0 16 5 25 10 
+18 0 26 29 14 
+11 7 0 27 25 
+23 28 15 0 10 
+36 5 12 6 0 
+
+0 0.4 0.3 0.2 0.2 
+0.6 0 0.3 0.3 0.1 
+0.4 0.2 0 0.4 0.8 
+0.5 0.8 0.2 0 0.3 
+0.3 0.5 0.1 0.2 0 
+SET_ORIGIN Taipei_one_o_one
+OPTIMAL_PATH Shilin_Night_Market TIME
+MARK_STATE CLOSE Palace_Museum East_District
+OPTIMAL_PATH Shilin_Night_Market FLOW
+MARK_STATE OPEN Palace_Museum
+LIMITED_PATH Shilin_Night_Market FLOW 2
+END_OF_INSTRUCTION
